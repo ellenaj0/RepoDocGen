@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RepoDocGen - Repository Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .summary-card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .files-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .file-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .file-card h3 {
+            color: #667eea;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .language-tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Chatbot styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px 12px 0 0;
+            font-weight: bold;
+            justify-content: space-between;
+        }
+
+        .chatbot-toggle {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            max-height: 400px;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: 2rem;
+        }
+
+        .message.bot {
+            background: #f0f0f0;
+            margin-right: 2rem;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+
+        .chatbot-input button {
+            padding: 0.75rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chatbot-input button:hover {
+            background: #5568d3;
+        }
+
+        .code-pill {
+            display: inline-block;
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.9rem;
+            background: #f3f4f6;
+            color: #111827;
+            border-radius: 999px;
+            padding: 0.15rem 0.6rem;
+            margin-right: 0.25rem;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📚 RepoDocGen</h1>
+        <p>AI-Generated Repository Documentation</p>
+    </header>
+
+    <div class="container">
+        {% if repo_summary %}
+        <div class="summary-card">
+            <h2>Repository Overview</h2>
+            <p style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                {{ repo_summary.repo_name }}
+            </p>
+
+            <p><strong>Total Files:</strong> {{ repo_summary.total_files }}</p>
+
+            <!-- Reformatted Architecture to match other sections -->
+            <h3 style="margin-top: 1rem;">Architecture</h3>
+            <p>{{ repo_summary.architecture_summary | inline_code | safe }}</p>
+
+            {% if repo_summary.main_modules %}
+            <h3 style="margin-top: 1rem;">Main Modules</h3>
+            <ul>
+                {% for module in repo_summary.main_modules %}
+                <li>{{ module | inline_code | safe }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if repo_summary.key_functionalities %}
+            <h3 style="margin-top: 1rem;">Key Functionalities</h3>
+            <ul>
+                {% for func in repo_summary.key_functionalities %}
+                <li>{{ func | inline_code | safe }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if repo_summary.entry_points %}
+            <h3 style="margin-top: 1rem;">Entry Points</h3>
+            <ul>
+                {% for entry in repo_summary.entry_points %}
+                <li>{{ entry | inline_code | safe }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="summary-card">
+            <h2>Files in Repository</h2>
+            <div class="files-list">
+                {% for file in file_summaries %}
+                <div class="file-card" onclick="openFileDetails('{{ file.file_path }}')">
+                    <span class="language-tag">{{ file.language }}</span>
+                    <h3>
+                        <span class="code-pill">{{ file.file_path }}</span>
+                    </h3>
+                    <p>{{ (file.high_level_summary ~ '...') | inline_code | safe }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div id="file-details" class="summary-card" style="display:none; margin-top: 1.5rem;">
+            <h2 id="detail-title">File details</h2>            
+            <h3>Summary</h3>
+            <p id="detail-summary"></p>
+
+            <h3>Main functionalities</h3>
+            <ul id="detail-functionalities"></ul>
+
+            <h3>Key elements</h3>
+            <ul id="detail-elements"></ul>
+
+            <h3>Dependencies</h3>
+            <ul id="detail-deps"></ul>
+        </div>
+
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot-header">
+            <span>💬 Ask about the repository</span>
+            <button class="chatbot-toggle" onclick="toggleChat()">−</button>
+        </div>
+        <div class="chatbot-messages" id="messages">
+            <div class="message bot">
+                Hi! I'm your repository assistant. Ask me anything about this codebase!
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="question-input" placeholder="Ask a question..." />
+            <button onclick="sendQuestion()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let chatCollapsed = false;
+
+        function toggleChat() {
+            const container = document.querySelector('.chatbot-container');
+            const messages = document.querySelector('.chatbot-messages');
+            const input = document.querySelector('.chatbot-input');
+            const toggleBtn = document.querySelector('.chatbot-toggle');
+
+            chatCollapsed = !chatCollapsed;
+
+            if (chatCollapsed) {
+                messages.style.display = 'none';
+                input.style.display = 'none';
+                container.style.height = 'auto';
+                container.style.width = '260px';   // smaller bubble when collapsed
+                toggleBtn.textContent = '+';
+            } else {
+                messages.style.display = 'block';
+                input.style.display = 'flex';
+                container.style.width = '50vw';   // back to normal
+                toggleBtn.textContent = '−';
+            }
+        }
+
+        function formatInlineCode(text) {
+            // Replace `something` with a styled code pill
+            return text.replace(/`([^`]+)`/g, '<span class="code-pill">$1</span>');
+        }
+
+        async function openFileDetails(path) {
+            try {
+                const res = await fetch(`/api/file/${encodeURIComponent(path)}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    addMessage('Error: ' + data.error, 'bot');
+                    return;
+                }
+
+                document.getElementById('detail-title').textContent = data.file_path;
+                // document.getElementById('detail-path').textContent = data.file_path;
+                // document.getElementById('detail-language').textContent = data.language;
+
+                document.getElementById('detail-summary').innerHTML =
+                formatInlineCode(data.summary || 'No summary available');
+
+
+                fillList('detail-functionalities', data.functionalities);
+                fillList('detail-elements', data.key_elements);
+                fillList('detail-deps', data.dependencies);
+
+                const panel = document.getElementById('file-details');
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                console.error(e);
+                addMessage('Error loading file details', 'bot');
+            }
+        }
+
+        function fillList(id, items) {
+            const ul = document.getElementById(id);
+            ul.innerHTML = '';
+
+            if (!items) return;
+
+            const arr = Array.isArray(items) ? items : [items];
+
+            arr.forEach(item => {
+                let text;
+
+                if (typeof item === 'string') {
+                    text = item;
+                } else if (typeof item === 'object' && item !== null) {
+                    // Try common fields first; if none, fall back to JSON
+                    text =
+                        item.description ||
+                        item.detail ||
+                        item.text ||
+                        item.name ||
+                        JSON.stringify(item);
+                } else {
+                    text = String(item);
+                }
+
+                const li = document.createElement('li');
+                li.innerHTML = formatInlineCode(text);  // allow HTML & code pills
+                ul.appendChild(li);
+            });
+        }
+
+        async function sendQuestion() {
+            const input = document.getElementById('question-input');
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            // Display user message
+            addMessage(question, 'user');
+            input.value = '';
+
+            // Send to backend
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question }),
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    addMessage('Error: ' + data.error, 'bot');
+                } else {
+                    addMessage(data.answer, 'bot');
+                }
+            } catch (error) {
+                addMessage('Error connecting to server', 'bot');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Allow Enter key to send
+        document.getElementById('question-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendQuestion();
+        });
+    </script>
+</body>
+</html>
