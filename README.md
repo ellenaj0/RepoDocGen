@@ -20,7 +20,7 @@ conda env create -f environment.yaml
 conda activate repodocgen
 ```
 
-#### Option 2: Using pip (Recommended)
+#### Option 2: Using pip 
 
 ```bash
 # Create virtual environment
